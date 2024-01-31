@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, NavLink, useLocation, useNavigate } from 'react-router-dom';
 
 import NavLinkTag from './pages/nav-link';
@@ -18,6 +18,7 @@ const Header = () => {
     setMenuVisible(false);
   };
   const currentPath = useLocation().pathname;
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [clickedLabel, setClickedLabel] = useState(localStorage.getItem('label') || '');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navLinks: NavLinkProps[] = [
@@ -78,6 +79,7 @@ const Header = () => {
     setClickedLabel(title);
     setIsDropdownOpen(!isDropdownOpen);
   };
+
   useEffect(() => {
     setIsDropdownOpen(true);
   }, [clickedLabel]);
@@ -86,7 +88,21 @@ const Header = () => {
     setIsDropdownOpen(false);
   };
   console.log(clickedLabel);
+  const closeDropdown = () => {
+    setIsDropdownOpen(false);
+  };
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        closeDropdown();
+      }
+    };
 
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
   return (
     <div className=" justify-between bg-slate-100 shadow-md h-15 ">
       <div className="flex items-start justify-between px-2 py-2">
@@ -116,8 +132,8 @@ const Header = () => {
           </ul>
         )}
       </div>
-      <div className=" flex bg-site-color px-2 py-2  justify-center items-center" id="navbar">
-        <ul className="flex md:p-0 md:flex-row md:space-x-8 mt-0 mb-[3px] ">
+      <div className=" flex bg-site-color px-2 py-2  justify-center items-center" id="navbar" ref={dropdownRef}>
+        <ul className="flex md:p-0 md:flex-row md:space-x-8 mt-0 mb-[3px] " >
           {/* <NavLinkTag title={link.title} path={link.path} dropdown={link.dropdown} onClick={link.onClick}/> */}
           {navLinks.map((link, index) => (
             <li key={index} onClick={() => handleItemClick(link.title)}>
